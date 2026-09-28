@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini Immersive View — Next-Gen Interactive Academy</title>
+<style>
+:root {
+  --bg-deep: #050811;
+  --bg-card: rgba(13, 20, 36, 0.72);
+  --bg-card-hover: rgba(18, 29, 54, 0.85);
+  --border: rgba(0, 212, 255, 0.18);
+  --border-strong: rgba(0, 212, 255, 0.45);
+  --cyan: #00d4ff;
+  --cyan-glow: rgba(0, 212, 255, 0.35);
+  --purple: #a855f7;
+  --purple-glow: rgba(168, 85, 247, 0.35);
+  --green: #10b981;
+  --green-glow: rgba(16, 185, 129, 0.35);
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --font-main: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Consolas', 'Fira Code', 'Monaco', monospace;
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  selection-background-color: var(--cyan);
+  selection-color: #000;
+}
+
+/* Ambient dynamic background */
+.ambient-canvas {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* Progress bar */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple), var(--green));
+  z-index: 10000;
+  box-shadow: 0 0 10px var(--cyan);
+  transition: width 0.2s ease-out;
+}
+
+/* App Header & Nav */
+header.app-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 68px;
+  background: rgba(5, 8, 17, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2));
+  border: 1px solid var(--cyan);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px var(--cyan-glow);
+}
+.brand-icon svg { width: 20px; height: 20px; fill: var(--cyan); }
+.brand-text h1 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #fff, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.brand-text span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.nav-hub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 60vw;
+  scrollbar-width: none;
+  padding: 6px 4px;
+}
+.nav-hub::-webkit-scrollbar { display: none; }
+
+.nav-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-tab-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.nav-tab-btn.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.25), rgba(168, 85, 247, 0.25));
+  border-color: var(--cyan);
+  box-shadow: 0 0 16px var(--cyan-glow);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pulse-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulseAnim 2s infinite;
+}
+@keyframes pulseAnim {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--green); }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* App Main Container */
+main.app-viewport {
+  position: relative;
+  z-index: 1;
+  padding-top: 86px;
+  padding-bottom: 80px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* View Section Switching */
+.view-section {
+  display: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.view-section.active {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero Modern Presentation */
+.hero-banner {
+  position: relative;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(9, 14, 26, 0.95));
+  border: 1px solid var(--border);
+  padding: 40px 36px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  margin-bottom: 30px;
+}
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0,212,255,0.15) 0%, rgba(168,85,247,0.1) 40%, transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid var(--border-strong);
+  color: var(--cyan);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 18px;
+}
+.hero-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 30%, var(--cyan) 75%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 16px;
+}
+.hero-subtitle {
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  max-width: 780px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+/* Hero interactive simulation preview */
+.hero-sim-box {
+  background: #060b17;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 24px 0;
+  box-shadow: 0 0 35px rgba(0, 212, 255, 0.12);
+  position: relative;
+}
+
+/* Quick Metrics Grid */
+.stat-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
+.stat-chip {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 20px;
+  transition: all var(--transition-fast);
+}
+.stat-chip:hover {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+.stat-chip .val {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--cyan);
+  display: block;
+}
+.stat-chip .lbl {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+}
+
+/* Glass Cards */
+.card-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+.card-panel h2 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.card-panel h2 .icon {
+  color: var(--cyan);
+  font-size: 1.3rem;
+}
+.card-panel h3 {
+  font-size: 1.12rem;
+  color: var(--cyan);
+  margin: 20px 0 10px;
+  font-weight: 700;
+}
+.card-panel h4 {
+  font-size: 0.95rem;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 16px 0 8px;
+}
+.card-panel p {
+  color: #cbd5e1;
+  font-size: 0.97rem;
+  margin-bottom: 12px;
+}
+
+/* Callouts Modernized */
+.callout {
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  font-size: 0.93rem;
+  border-left: 4px solid;
+  line-height: 1.55;
+  background: rgba(255, 255, 255, 0.02);
+}
+.callout.info {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: var(--cyan);
+  color: #bae6fd;
+}
+.callout.warn {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: var(--amber);
+  color: #fde68a;
+}
+.callout.example {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: var(--green);
+  color: #a7f3d0;
+}
+
+/* Prompt Box with Interactive Copy & Run */
+.prompt-card {
+  background: #040712;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 16px;
+  padding: 18px;
+  margin: 18px 0;
+  position: relative;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+.prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.prompt-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prompt-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-action {
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--cyan);
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-action:hover {
+  background: var(--cyan);
+  color: #030712;
+  box-shadow: 0 0 12px var(--cyan-glow);
+}
+.btn-action.copied {
+  background: var(--green);
+  border-color: var(--green);
+  color: #030712;
+}
+
+.prompt-card pre {
+  color: #a5f3fc;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Steps Visual Timeline */
+.steps-timeline {
+  list-style: none;
+  position: relative;
+  padding-left: 20px;
+  margin: 20px 0;
+}
+.steps-timeline::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--cyan), var(--purple), var(--green));
+  opacity: 0.4;
+}
+.steps-timeline li {
+  position: relative;
+  padding-left: 36px;
+  margin-bottom: 20px;
+}
+.steps-timeline li .step-number {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #090e1c;
+  border: 2px solid var(--cyan);
+  color: var(--cyan);
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+.steps-timeline li .step-content {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+.steps-timeline li .step-title {
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+/* Chips Cluster */
+.chip-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+.chip-item {
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: var(--cyan);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  cursor: default;
+}
+.chip-item:hover {
+  background: rgba(0, 212, 255, 0.16);
+  border-color: var(--cyan);
+}
+.chip-item.green { color: var(--green); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
+.chip-item.purple { color: var(--purple); border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.08); }
+.chip-item.amber { color: var(--amber); border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); }
+
+/* Interactive Widgets: 3D Pendulum / Wave Simulator / Piano */
+.interactive-lab {
+  background: #040814;
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.1);
+}
+.lab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.lab-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lab-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.slider-group input[type="range"] {
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+/* Interactive Canvas Lab Surfaces */
+.lab-canvas-container {
+  width: 100%;
+  height: 280px;
+  background: radial-gradient(circle at center, #0a1124 0%, #03060f 100%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.lab-canvas-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Virtual Piano Keyboard */
+.piano-wrapper {
+  background: #080d1a;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+.piano-keys {
+  display: inline-flex;
+  position: relative;
+  user-select: none;
+  margin: 15px auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+.piano-key {
+  cursor: pointer;
+  transition: background 0.1s, transform 0.1s;
+  font-weight: 700;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+.piano-key.white {
+  width: 48px;
+  height: 170px;
+  background: #ffffff;
+  color: #1e293b;
+  border-right: 1px solid #cbd5e1;
+  z-index: 1;
+  font-size: 0.8rem;
+}
+.piano-key.white:active, .piano-key.white.active {
+  background: #bae6fd !important;
+  transform: translateY(2px);
+}
+.piano-key.white.highlight {
+  background: #7dd3fc !important;
+  color: #0369a1;
+}
+.piano-key.black {
+  width: 30px;
+  height: 110px;
+  background: #0f172a;
+  color: #94a3b8;
+  margin-left: -15px;
+  margin-right: -15px;
+  z-index: 2;
+  border-radius: 0 0 4px 4px;
+  font-size: 0.7rem;
+}
+.piano-key.black:active, .piano-key.black.active {
+  background: var(--cyan) !important;
+  color: #000;
+  transform: translateY(2px);
+}
+.piano-key.black.highlight {
+  background: var(--purple) !important;
+  color: #fff;
+}
+.chord-selector {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.btn-chord {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: all var(--transition-fast);
+}
+.btn-chord:hover, .btn-chord.active {
+  background: var(--cyan);
+  color: #000;
+  font-weight: 700;
+}
+
+/* Accordion Modern */
+.faq-accordion {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin: 12px 0;
+  overflow: hidden;
+  background: rgba(13, 20, 36, 0.5);
+  transition: all var(--transition-fast);
+}
+.faq-accordion.open {
+  border-color: var(--border-strong);
+  background: rgba(13, 20, 36, 0.85);
+}
+.faq-trigger {
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.98rem;
+  user-select: none;
+}
+.faq-trigger:hover {
+  background: rgba(0, 212, 255, 0.05);
+}
+.faq-icon-arrow {
+  color: var(--cyan);
+  transition: transform 0.3s ease;
+}
+.faq-accordion.open .faq-icon-arrow {
+  transform: rotate(180deg);
+}
+.faq-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0, 1, 0, 1), padding 0.3s ease;
+  padding: 0 20px;
+  color: #cbd5e1;
+  font-size: 0.93rem;
+}
+.faq-accordion.open .faq-body {
+  max-height: 2000px;
+  padding: 14px 20px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Table */
+.data-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 18px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+table.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+table.styled-table th {
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--cyan);
+  padding: 12px 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--border);
+}
+table.styled-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+table.styled-table tr:hover td {
+  background: rgba(0, 212, 255, 0.03);
+}
+
+/* Modern Toast Notification */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--cyan);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--cyan-glow);
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Floating Navigation Dock / Action Bar */
+.floating-dock {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 15, 30, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-strong);
+  padding: 6px 10px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 998;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.2);
+}
+.dock-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.dock-btn:hover {
+  color: var(--cyan);
+  background: rgba(0, 212, 255, 0.15);
+  transform: translateY(-2px);
+}
+.dock-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .hero-title { font-size: 2rem; }
+  .card-panel { padding: 20px; }
+  .nav-hub { max-width: 50vw; }
+  .piano-key.white { width: 34px; height: 130px; }
+  .piano-key.black { width: 22px; height: 85px; margin-left: -11px; margin-right: -11px; }
+}
+@media (max-width: 640px) {
+  header.app-header { padding: 0 16px; }
+  .brand-text span { display: none; }
+  .live-indicator { display: none; }
+  .hero-banner { padding: 26px 18px; }
+  .hero-title { font-size: 1.65rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Progress indicator -->
+<div id="progress-bar"></div>
+
+<!-- Background Canvas for Ambient Starfield and Node Flow -->
+<canvas id="ambient-canvas" class="ambient-canvas"></canvas>
+
+<!-- Main Global Header -->
+<header class="app-header">
+  <div class="brand-badge" onclick="switchView('home')">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.8L19.5 19h-15L12 5.8zM11 10h2v4h-2zm0 6h2v2h-2z"/></svg>
+    </div>
+    <div class="brand-text">
+      <h1>IMMERSIVE VIEW</h1>
+      <span>Interactive Academy · 2026</span>
+    </div>
+  </div>
+
+  <nav class="nav-hub" id="navHub">
+    <button class="nav-tab-btn active" data-view="home">🏠 Inicio</button>
+    <button class="nav-tab-btn" data-view="quees">🧭 Qué es</button>
+    <button class="nav-tab-btn" data-view="primeros">🚀 Primeros Pasos</button>
+    <button class="nav-tab-btn" data-view="ejercicios">🧪 Curiosidad</button>
+    <button class="nav-tab-btn" data-view="fisica">🔬 Física & Simulaciones</button>
+    <button class="nav-tab-btn" data-view="musica">🎹 Música & Piano</button>
+    <button class="nav-tab-btn" data-view="mate">🧮 Matemáticas</button>
+    <button class="nav-tab-btn" data-view="metodo">🧠 El Método</button>
+    <button class="nav-tab-btn" data-view="prompts">📝 Prompts Maestros</button>
+    <button class="nav-tab-btn" data-view="buenas">⚖️ Buenas Prácticas</button>
+    <button class="nav-tab-btn" data-view="experimento">🎯 Experimento Final</button>
+    <button class="nav-tab-btn" data-view="fuentes">🔗 Fuentes & Referencias</button>
+    <button class="nav-tab-btn" data-view="creditos">★ Créditos</button>
+  </nav>
+
+  <div class="header-actions">
+    <div class="live-indicator">
+      <span class="pulse-dot"></span>
+      <span>Simulador Activo</span>
+    </div>
+  </div>
+</header>
+
+<!-- App Viewport -->
+<main class="app-viewport">
+
+  <!-- ==================== VIEW 1: HOME ==================== -->
+  <section id="view-home" class="view-section active">
+    <div class="hero-banner">
+      <div class="hero-tag">
+        <span>◈ Super Tutorial Interactivo · Deep Visual Learning</span>
+      </div>
+      <h1 class="hero-title">Gemini Immersive View</h1>
+      <p class="hero-subtitle">
+        Domina la nueva forma de aprender explorando por capas visuales, nodos interactivos y simulaciones dinámicas en 3D.
+      </p>
+
+      <!-- Interactive SVG Node Explorer with Live Animations -->
+      <div class="hero-sim-box">
+        <svg id="hero-svg-canvas" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="width:100%; display:block;">
+          <defs>
+            <radialGradient id="hGradCyan" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#00d4ff" stop-opacity="0.8"/>
+              <stop offset="60%" stop-color="#00d4ff" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#00d4ff" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="hGradPurp" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#a855f7" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="heroGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <!-- Orbit Paths -->
+            <path id="flow-p1" d="M 400 210 Q 400 130 400 90"/>
+            <path id="flow-p2" d="M 400 210 Q 480 170 540 120"/>
+            <path id="flow-p3" d="M 400 210 Q 500 250 560 300"/>
+            <path id="flow-p4" d="M 400 210 Q 400 290 400 330"/>
+            <path id="flow-p5" d="M 400 210 Q 300 250 240 300"/>
+            <path id="flow-p6" d="M 400 210 Q 320 170 260 120"/>
+          </defs>
+
+          <!-- Outer Concentric Rotating Gyros -->
+          <g transform="translate(400, 210)" opacity="0.6">
+            <circle r="160" fill="none" stroke="#00d4ff" stroke-width="1.2" stroke-dasharray="8 14">
+              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="22s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="125" fill="none" stroke="#a855f7" stroke-width="1" stroke-dasharray="5 18">
+              <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="16s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="85" fill="none" stroke="#10b981" stroke-width="0.8" stroke-dasharray="4 8" opacity="0.8">
+              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="11s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+
+          <!-- Flow Links with Pulsing Dashes -->
+          <g stroke="#00d4ff" stroke-width="1.8" fill="none" opacity="0.65" filter="url(#heroGlow)">
+            <use href="#flow-p1"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="3s" repeatCount="indefinite"/></use>
+            <use href="#flow-p2"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="3.5s" repeatCount="indefinite"/></use>
+            <use href="#flow-p3"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="3.2s" repeatCount="indefinite"/></use>
+            <use href="#flow-p4"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="2.8s" repeatCount="indefinite"/></use>
+            <use href="#flow-p5"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="3.6s" repeatCount="indefinite"/></use>
+            <use href="#flow-p6"><animate attributeName="stroke-dasharray" values="4 8; 8 4; 4 8" dur="3.1s" repeatCount="indefinite"/></use>
+          </g>
+
+          <!-- Traveling Energy Packets -->
+          <g filter="url(#heroGlow)">
+            <circle r="4" fill="#00d4ff"><animateMotion dur="2.2s" repeatCount="indefinite"><mpath href="#flow-p1"/></animateMotion></circle>
+            <circle r="4" fill="#10b981"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#flow-p2"/></animateMotion></circle>
+            <circle r="4" fill="#f59e0b"><animateMotion dur="2.9s" repeatCount="indefinite"><mpath href="#flow-p3"/></animateMotion></circle>
+            <circle r="4" fill="#ef4444"><animateMotion dur="3.3s" repeatCount="indefinite"><mpath href="#flow-p4"/></animateMotion></circle>
+            <circle r="4" fill="#a855f7"><animateMotion dur="2.7s" repeatCount="indefinite"><mpath href="#flow-p5"/></animateMotion></circle>
+            <circle r="4" fill="#00d4ff"><animateMotion dur="3.1s" repeatCount="indefinite"><mpath href="#flow-p6"/></animateMotion></circle>
+          </g>
+
+          <!-- Central Pulsing Core -->
+          <circle cx="400" cy="210" r="50" fill="url(#hGradCyan)">
+            <animate attributeName="r" values="45;65;45" dur="3.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.9;0.35;0.9" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="210" r="26" fill="#060c1c" stroke="#00d4ff" stroke-width="2.5" filter="url(#heroGlow)"/>
+          <text x="400" y="215" text-anchor="middle" fill="#00d4ff" font-family="system-ui" font-size="11" font-weight="900" letter-spacing="1">TEMA</text>
+
+          <!-- Clickable Interactive Nodes to jump into modules -->
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('quees')">
+            <circle cx="400" cy="90" r="18" fill="#0b1329" stroke="#00d4ff" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="400" y="94" text-anchor="middle" fill="#00d4ff" font-size="9" font-weight="800">QUÉ ES</text>
+          </g>
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('fisica')">
+            <circle cx="540" cy="120" r="18" fill="#0b1329" stroke="#10b981" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="540" y="124" text-anchor="middle" fill="#10b981" font-size="9" font-weight="800">FÍSICA</text>
+          </g>
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('musica')">
+            <circle cx="560" cy="300" r="18" fill="#0b1329" stroke="#f59e0b" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="560" y="304" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="800">MÚSICA</text>
+          </g>
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('mate')">
+            <circle cx="400" cy="330" r="18" fill="#0b1329" stroke="#ef4444" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="400" y="334" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="800">MATH</text>
+          </g>
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('metodo')">
+            <circle cx="240" cy="300" r="18" fill="#0b1329" stroke="#a855f7" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="240" y="304" text-anchor="middle" fill="#a855f7" font-size="9" font-weight="800">MÉTODO</text>
+          </g>
+          <g class="interactive-node" style="cursor:pointer;" onclick="switchView('prompts')">
+            <circle cx="260" cy="120" r="18" fill="#0b1329" stroke="#00d4ff" stroke-width="2" filter="url(#heroGlow)"/>
+            <text x="260" y="124" text-anchor="middle" fill="#00d4ff" font-size="9" font-weight="800">PROMPTS</text>
+          </g>
+
+          <!-- Top Overlay Title -->
+          <text x="400" y="32" text-anchor="middle" fill="#94a3b8" font-family="system-ui" font-size="11" font-weight="600" letter-spacing="3">EXPLORACIÓN MULTI-CAPA ACTIVA</text>
+        </svg>
+      </div>
+
+      <!-- Live metrics -->
+      <div class="stat-chips-grid">
+        <div class="stat-chip">
+          <span class="val">35</span>
+          <span class="lbl">Secciones y Conceptos</span>
+        </div>
+        <div class="stat-chip">
+          <span class="val">11</span>
+          <span class="lbl">Ejercicios Guiados</span>
+        </div>
+        <div class="stat-chip">
+          <span class="val">4</span>
+          <span class="lbl">Prompts Maestros</span>
+        </div>
+        <div class="stat-chip">
+          <span class="val">7</span>
+          <span class="lbl">Fases del Método</span>
+        </div>
+        <div class="stat-chip">
+          <span class="val">2026</span>
+          <span class="lbl">Actualización IA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overview Panel -->
+    <div class="card-panel">
+      <h2><span class="icon">⚡</span> Arquitectura del Conocimiento</h2>
+      <p>
+        El objetivo de esta plataforma es entender y aplicar la experiencia de <strong>Immersive View</strong> aparecida en Gemini: transformar temas abstractos en mapas visuales ramificados, nodos clicables y simulaciones dinámicas en 3D que invitan a la experimentación sin necesidad de saber de antemano qué preguntar.
+      </p>
+
+      <div class="callout warn">
+        <strong>⚠ Estado oficial de la función (Septiembre 2026):</strong> Google ha confirmado oficialmente el Hub de Estudiantes de Gemini y las <strong>Visualizaciones Interactivas 3D</strong>. La experiencia específica bautizada como <em>Immersive View</em> fue reportada dentro del entorno para estudiantes. Este portal te enseña tanto a usar Immersive View como a dominar las simulaciones 3D interactivas universales de Gemini.
+      </div>
+
+      <div class="callout example">
+        <em>"Si no puedes explicarlo de forma sencilla, es que no lo entiendes lo suficientemente bien."</em>
+      </div>
+
+      <div class="chip-cloud">
+        <span class="chip-item">SPA Ultra Rápida</span>
+        <span class="chip-item green">Sin Dependencias Externas</span>
+        <span class="chip-item purple">Simuladores Físicos en Canvas</span>
+        <span class="chip-item amber">Teclado de Piano Web Audio</span>
+        <span class="chip-item">Copiar al Portapapeles con 1 Click</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 2: QUÉ ES ==================== -->
+  <section id="view-quees" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🧭</span> ¿Qué es realmente Immersive View?</h2>
+      <h3>1.1 La idea en una frase</h3>
+      <p>Immersive View convierte cualquier tema en una <strong>exploración visual por capas y niveles de profundidad</strong>.</p>
+      
+      <div style="display:flex; justify-content:center; align-items:center; gap:16px; margin:24px 0; flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.05); padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1);">
+          Chat clásico: <strong>Pregunta → Respuesta → Pregunta</strong>
+        </div>
+        <span style="color:var(--cyan); font-size:1.5rem;">➔</span>
+        <div style="background:rgba(0,212,255,0.1); padding:12px 20px; border-radius:12px; border:1px solid var(--cyan); color:var(--cyan); font-weight:700;">
+          Immersive View: <strong>Tema → Mapa Visual → Nodo → Profundización Infinita</strong>
+        </div>
+      </div>
+
+      <p>
+        Los primeros reportes públicos describen una experiencia en la que eliges un tema, aparece una imagen con distintos nodos interactivos y puedes pulsar sobre ellos para profundizar: por ejemplo, desde el estudio de un dinosaurio hasta sus huesos, proteínas y finalmente átomos.
+      </p>
+
+      <h3>1.2 Tres conceptos clave que no debes confundir</h3>
+      <div class="faq-accordion open">
+        <div class="faq-trigger">
+          <span>A. Interactive Images (Google)</span>
+          <span class="faq-icon-arrow">▼</span>
+        </div>
+        <div class="faq-body">
+          Diagramas e infografías donde puedes seleccionar regiones específicas para obtener explicaciones y ampliaciones contextuales inmediatas.
+        </div>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-trigger">
+          <span>B. Interactive Visualizations (Simulaciones 3D)</span>
+          <span class="faq-icon-arrow">▼</span>
+        </div>
+        <div class="faq-body">
+          Lanzado oficialmente por Google en 2026: modelos 3D funcionales (como la molécula de ADN que puedes rotar y hacer zoom) y simuladores dinámicos de física ejecutables dentro del chat.
+        </div>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-trigger">
+          <span>C. Immersive View (Exploración Nodal)</span>
+          <span class="faq-icon-arrow">▼</span>
+        </div>
+        <div class="faq-body">
+          La experiencia nodal observada en el hub de estudiantes que crea redes temáticas navegables visualmente de macro a micro escala.
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>La gran ventaja epistemológica:</strong> La interfaz se convierte en parte del propio proceso de razonamiento. En lugar de pensar qué preguntar, la representación visual te sugiere conexiones que no sospechabas.
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 3: PRIMEROS PASOS ==================== -->
+  <section id="view-primeros" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🚀</span> Primeros Pasos y URLs de Acceso</h2>
+      <p>Requisitos para comprobar y acceder a la experiencia:</p>
+      
+      <ol class="steps-timeline">
+        <li>
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Disponer de cuenta de Google activa</div>
+            <p>Accede con tu cuenta estándar o educativa a través de Chrome, Firefox, Safari o Edge.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Verificar la URL directa de Immersive View</div>
+            <p>Introduce la dirección detectada para probar si tu región o cuenta la tiene habilitada:</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-title">URL Directa</span>
+                <button class="btn-action" onclick="copyToClipboard('https://gemini.google.com/immersive-view', this)">Copiar URL</button>
+              </div>
+              <pre>https://gemini.google.com/immersive-view</pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Comprobar el Hub de Estudiantes de Gemini</div>
+            <p>Espacio oficial donde Google reúne las herramientas de visualización interactiva:</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-title">URL Estudiantes</span>
+                <button class="btn-action" onclick="copyToClipboard('https://gemini.google.com/students', this)">Copiar URL</button>
+              </div>
+              <pre>https://gemini.google.com/students</pre>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <h3>Diagnóstico de Estados de Cuenta</h3>
+      <div class="faq-accordion">
+        <div class="faq-trigger"><span>Caso A — Se abre la vista Immersive View</span><span class="faq-icon-arrow">▼</span></div>
+        <div class="faq-body">¡Excelente! Tu cuenta forma parte del despliegue activo. Puedes seguir los ejercicios nodales directamente.</div>
+      </div>
+      <div class="faq-accordion">
+        <div class="faq-trigger"><span>Caso B — Te redirige al chat o estudiantes</span><span class="faq-icon-arrow">▼</span></div>
+        <div class="faq-body">Despliegue gradual estándar de Google. Puedes usar los prompts de simulación 3D que funcionan en cualquier ventana de Gemini.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 4: EJERCICIOS ==================== -->
+  <section id="view-ejercicios" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🧪</span> Ejercicios de Exploración Guiada por Curiosidad</h2>
+      <p>Aprende la técnica de <strong>curiosidad guiada por imágenes</strong> sin memorizar nada de forma pasiva.</p>
+
+      <h3>Temas recomendados para iniciar la inmersión:</h3>
+      <div class="chip-cloud">
+        <span class="chip-item">Quásares & Agujeros Negros</span>
+        <span class="chip-item green">Doble Hélice de ADN</span>
+        <span class="chip-item purple">Evolución & Fósiles</span>
+        <span class="chip-item amber">Estructura Atómica</span>
+        <span class="chip-item">Fuerzas Electromagnéticas</span>
+        <span class="chip-item green">Cerebro y Sinapsis</span>
+      </div>
+
+      <!-- Ejercicio ADN 3D -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🧬 Ejercicio 6: Solicitud de ADN 3D Funcional</span>
+          <button class="btn-action" onclick="copyPrompt('prompt-adn', this)">Copiar Prompt</button>
+        </div>
+        <pre id="prompt-adn">Muéstrame cómo funciona el ADN en 3D.
+
+Quiero una visualización interactiva que pueda rotar y ampliar.
+
+Después explícame qué estoy viendo, pero no me des una explicación larga hasta que yo explore primero.</pre>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🔍 Prompt de profundización tras explorar</span>
+          <button class="btn-action" onclick="copyPrompt('prompt-adn-eval', this)">Copiar Prompt</button>
+        </div>
+        <pre id="prompt-adn-eval">Ahora explícame exactamente qué estoy viendo.
+Señálame las partes más importantes una por una.
+Hazme tres preguntas para comprobar si realmente entendí lo que acabo de explorar.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 5: FÍSICA ==================== -->
+  <section id="view-fisica" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🔬</span> Física Interactiva y Simulaciones Reales</h2>
+      <p>
+        Google destaca la capacidad de simular fenómenos físicos donde la energía y las fuerzas se transforman ante tus ojos. A continuación tienes un simulador de péndulo en tiempo real programado directamente en la aplicación.
+      </p>
+
+      <!-- Simulador de Péndulo Interactivo -->
+      <div class="interactive-lab">
+        <div class="lab-header">
+          <div class="lab-title">
+            <span>⚖ Laboratorio en Vivo: Oscilador y Péndulo Simple</span>
+          </div>
+          <div class="lab-controls">
+            <div class="slider-group">
+              <label>Longitud:</label>
+              <input type="range" id="pend-len" min="80" max="220" value="160">
+            </div>
+            <div class="slider-group">
+              <label>Gravedad:</label>
+              <input type="range" id="pend-g" min="2" max="25" value="9.8" step="0.5">
+            </div>
+            <div class="slider-group">
+              <label>Amortiguación:</label>
+              <input type="range" id="pend-damp" min="0.980" max="1.000" value="0.996" step="0.001">
+            </div>
+            <button class="btn-action" id="btn-reset-pend">Reiniciar</button>
+          </div>
+        </div>
+        <div class="lab-canvas-container">
+          <canvas id="pendulum-canvas"></canvas>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:12px;">
+          Arrastra la esfera con el cursor o el dedo para cambiar el ángulo inicial y observa el intercambio entre energía potencial y cinética.
+        </p>
+      </div>
+
+      <!-- Prompts de Física -->
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🔬 Ejercicio 7: Prompt Péndulo en Gemini</span>
+          <button class="btn-action" onclick="copyPrompt('p-fis-pen', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-fis-pen">Muéstrame una simulación interactiva de un péndulo.
+
+Quiero poder observar cómo cambia su energía durante el movimiento.
+
+Primero déjame explorar la simulación.
+Después explícame qué está ocurriendo.</pre>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">⚡ Prompt Maestro Universal de Física</span>
+          <button class="btn-action" onclick="copyPrompt('p-fis-master', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-fis-master">Quiero estudiar: [TEMA DE FÍSICA]
+
+Enséñamelo mediante una simulación o visualización interactiva si es posible.
+Primero quiero experimentar sin una explicación larga.
+Quiero poder modificar las variables importantes.
+
+Después:
+1. dime qué he observado;
+2. relaciónalo con las leyes físicas;
+3. introduce las ecuaciones;
+4. explica qué significa cada variable;
+5. dame un experimento mental;
+6. hazme tres preguntas para comprobar mi comprensión.
+
+No quiero memorizar primero. Quiero comprender a partir de la observación.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 6: MÚSICA ==================== -->
+  <section id="view-musica" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🎹</span> Música & Armonía Espacial</h2>
+      <p>
+        Aprende armonía musical utilizando exclusivamente el <strong>sistema americano de notas</strong>: <code>C, D, E, F, G, A, B</code> con sus respectivos grados <code>I, II, III, IV, V, VI, VII</code>.
+      </p>
+
+      <div class="callout info">
+        <strong>Ejemplo armónico:</strong> La progresión clásica se escribe <code>C(I) → F(IV) → G(V) → C(I)</code> en lugar del sistema tradicional latino.
+      </div>
+
+      <!-- Teclado de Piano Interactivo con Web Audio API -->
+      <div class="piano-wrapper">
+        <h3 style="margin-top:0;">Teclado de Piano Sintetizado en Vivo</h3>
+        <p style="font-size:0.86rem; color:var(--text-muted);">
+          Haz clic en las teclas para escuchar el sonido en tiempo real o activa un acorde para ver sus notas constitutivas en el sistema americano.
+        </p>
+
+        <div class="chord-selector">
+          <button class="btn-chord" onclick="highlightChord('C-maj')">Acorde C Mayor (I - III - V)</button>
+          <button class="btn-chord" onclick="highlightChord('C-min')">Acorde C Menor (I - bIII - V)</button>
+          <button class="btn-chord" onclick="highlightChord('F-maj')">Acorde F Mayor (IV)</button>
+          <button class="btn-chord" onclick="highlightChord('G-maj')">Acorde G Mayor (V)</button>
+          <button class="btn-chord" onclick="clearPianoHighlights()">Limpiar</button>
+        </div>
+
+        <div class="piano-keys" id="pianoContainer">
+          <!-- White and Black Keys injected dynamically -->
+        </div>
+
+        <div id="piano-note-display" style="font-size:1.1rem; font-weight:800; color:var(--cyan); margin-top:8px;">
+          Toca una tecla
+        </div>
+      </div>
+
+      <!-- Tabla Grados Escala C -->
+      <div class="data-table-wrap">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Grado</th>
+              <th>Nota (Sistema Americano)</th>
+              <th>Intervalo Relativo</th>
+              <th>Función Armónica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>I</td><td>C</td><td>Tónica</td><td>Reposo / Base</td></tr>
+            <tr><td>II</td><td>D</td><td>Tono</td><td>Superfónica</td></tr>
+            <tr><td>III</td><td>E</td><td>Tono</td><td>Modal (Mayor)</td></tr>
+            <tr><td>IV</td><td>F</td><td>Semitono</td><td>Subdominante</td></tr>
+            <tr><td>V</td><td>G</td><td>Tono</td><td>Dominante</td></tr>
+            <tr><td>VI</td><td>A</td><td>Tono</td><td>Relativa menor</td></tr>
+            <tr><td>VII</td><td>B</td><td>Tono</td><td>Sensible</td></tr>
+            <tr><td>I (octava)</td><td>C</td><td>Semitono</td><td>Resolución</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🎹 Prompt Maestro para Piano y Música</span>
+          <button class="btn-action" onclick="copyPrompt('p-mus-master', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-mus-master">Quiero comprender musicalmente: [TEMA O PROGRESIÓN]
+
+Quiero una representación visual e interactiva siempre que sea posible.
+Primero quiero observar y experimentar.
+
+Después explícame:
+- qué estoy viendo;
+- qué estoy escuchando conceptualmente;
+- qué relaciones existen;
+- qué regla musical hay detrás.
+
+Después dame un ejercicio práctico para piano utilizando el sistema americano de notas [A, B, C, D, E, F, G] y grados de escala [I, II, III...].
+
+No quiero empezar con teoría abstracta. Quiero aprender haciendo.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 7: MATEMÁTICAS ==================== -->
+  <section id="view-mate" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🧮</span> Matemáticas: Funciones e Interacción</h2>
+      <p>
+        Transforma fórmulas abstractas en geometría manipulable. Manipula aquí los parámetros de la onda sinusoidal y comprueba la relación entre amplitud, frecuencia y fase:
+      </p>
+
+      <!-- Simulador de Onda Seno Interactivo -->
+      <div class="interactive-lab">
+        <div class="lab-header">
+          <div class="lab-title">
+            <span>📈 Graficador Dinámico: y = A · sin(ωt + φ)</span>
+          </div>
+          <div class="lab-controls">
+            <div class="slider-group">
+              <label>Amplitud (A):</label>
+              <input type="range" id="wave-amp" min="10" max="80" value="45">
+            </div>
+            <div class="slider-group">
+              <label>Frecuencia (ω):</label>
+              <input type="range" id="wave-freq" min="1" max="15" value="4">
+            </div>
+            <div class="slider-group">
+              <label>Fase (φ):</label>
+              <input type="range" id="wave-phase" min="0" max="6.28" step="0.1" value="0">
+            </div>
+          </div>
+        </div>
+        <div class="lab-canvas-container">
+          <canvas id="math-wave-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🧮 Prompt Maestro para Matemáticas</span>
+          <button class="btn-action" onclick="copyPrompt('p-mat-master', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-mat-master">Quiero comprender: [CONCEPTO MATEMÁTICO]
+
+Crea una representación visual o interactiva.
+Primero déjame manipularla.
+Después ayúdame a descubrir qué relación matemática estoy observando.
+Solo después introduce la notación matemática formal.
+
+Finalmente dame tres ejercicios progresivos:
+1. muy sencillo;
+2. intermedio;
+3. uno que obligue a razonar.
+
+No me des las soluciones hasta que intente resolverlos.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 8: EL MÉTODO ==================== -->
+  <section id="view-metodo" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🧠</span> El Método de Aprendizaje Visual Activo</h2>
+      <p>
+        Un protocolo sistemático en 7 fases para transformar la IA de un generador de respuestas pasivas a un acelerador de comprensión profunda:
+      </p>
+
+      <ol class="steps-timeline">
+        <li>
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Fase 1: Explorar</div>
+            <p>No intentes memorizar. Rota, amplía, pulsa los nodos periféricos y mira el conjunto.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Fase 2: Preguntar</div>
+            <p>Identifica un elemento inesperado y pregunta: "¿Por qué ocurre esto aquí?"</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Fase 3: Explicar</div>
+            <p>Pide a la IA una explicación intuitiva y libre de jerga técnica inicial.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <div class="step-title">Fase 4: Experimentar</div>
+            <p>Pide cambiar una variable crítica (duplicar la masa, cambiar la tónica, acelerar el tiempo).</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <div class="step-title">Fase 5: Comprobar</div>
+            <p>Exige que la IA formule 3 preguntas trampa para auditar tu entendimiento.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">6</div>
+          <div class="step-content">
+            <div class="step-title">Fase 6: Explicar Tú (Técnica Feynman con IA)</div>
+            <p>Explícale el concepto a la IA con tus palabras y pide que solo corrija fallos conceptuales.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-title">Prompt Feynman IA</span>
+                <button class="btn-action" onclick="copyPrompt('p-feynman', this)">Copiar</button>
+              </div>
+              <pre id="p-feynman">Voy a explicarte con mis propias palabras lo que creo que he entendido.
+
+Tu trabajo es detectar:
+1. errores conceptuales,
+2. conceptos incompletos,
+3. relaciones que estoy confundiendo.
+
+No me des una nueva explicación completa. Corrige solamente lo necesario.</pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">7</div>
+          <div class="step-content">
+            <div class="step-title">Fase 7: Repetir</div>
+            <p>Regresa a la visualización inicial: notarás detalles que antes eran completamente invisibles.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 9: PROMPTS ==================== -->
+  <section id="view-prompts" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">📝</span> Biblioteca de Prompts Maestros</h2>
+      <p>Guarda y copia estos prompts listos para usar en tus sesiones de aprendizaje:</p>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🌟 Prompt Maestro Supremo: Exploración Visual</span>
+          <button class="btn-action" onclick="copyPrompt('p-supremo', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-supremo">Quiero aprender sobre: [TEMA]
+
+Quiero que lo conviertas en una experiencia de aprendizaje visual e interactiva.
+
+OBJETIVO:
+No quiero comenzar con una explicación larga.
+Primero quiero explorar visualmente el concepto.
+
+Después quiero:
+1. identificar las partes principales;
+2. explorar sus relaciones;
+3. modificar variables cuando sea posible;
+4. observar qué cambia;
+5. formular preguntas;
+6. recibir explicaciones sencillas;
+7. hacer pequeños ejercicios;
+8. comprobar si realmente entendí.
+
+REGLA PEDAGÓGICA:
+No me des toda la teoría de golpe.
+Quiero aprender haciendo: explorar → observar → preguntar → experimentar → explicar → comprobar.
+
+Cuando termine de explorar, hazme preguntas para comprobar mi comprensión.
+Si existe una simulación interactiva adecuada, utilízala. Si no existe, crea la mejor representación visual posible.</pre>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-header">
+          <span class="prompt-title">🔬 Prompt para Simulación de Segunda Ley de Newton</span>
+          <button class="btn-action" onclick="copyPrompt('p-newton-2', this)">Copiar Prompt</button>
+        </div>
+        <pre id="p-newton-2">Quiero comprender la segunda ley de Newton.
+No quiero solamente una explicación textual.
+
+Crea una simulación interactiva que me permita modificar masa y fuerza y observar qué ocurre con la aceleración.
+Después explícame la relación entre las tres variables.</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 10: BUENAS PRÁCTICAS ==================== -->
+  <section id="view-buenas" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">⚖️</span> Buenas Prácticas & Ecosistema de Herramientas</h2>
+      
+      <h3>¿Cuándo NO usar Immersive View?</h3>
+      <p>
+        Para operaciones directas (cálculos simples, traducciones, definiciones cortas o corrección gramatical), el chat de texto clásico sigue siendo superior y más veloz. Reserva la inmersión visual para <strong>estructuras, sistemas, topologías, relaciones espaciales y procesos dinámicos</strong>.
+      </p>
+
+      <h3>La Triada de Productividad con IA</h3>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin:20px 0;">
+        <div style="background:rgba(0,212,255,0.06); border:1px solid var(--border); padding:20px; border-radius:14px;">
+          <h4 style="color:var(--cyan); margin-top:0;">1. NotebookLM</h4>
+          <p style="font-size:0.88rem;">Fuentes documentales exactas, PDFs, transcripciones y base de verdad libre de alucinaciones.</p>
+        </div>
+        <div style="background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.3); padding:20px; border-radius:14px;">
+          <h4 style="color:var(--purple); margin-top:0;">2. Gemini</h4>
+          <p style="font-size:0.88rem;">Exploración visual en capas, simulaciones 3D e interactividad en tiempo real.</p>
+        </div>
+        <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.3); padding:20px; border-radius:14px;">
+          <h4 style="color:var(--green); margin-top:0;">3. Síntesis & Archivo</h4>
+          <p style="font-size:0.88rem;">Estructuración de guías, flashcards y fijación de conocimiento permanente en Notion u Obsidian.</p>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <strong>Ejemplo Yamaha PSR-SX920:</strong> La IA es excelente para entender el concepto de un <em>arranger keyboard</em> o progresiones de acompañamiento, pero para configurar botones exactos o memorias de registro (OTS), la fuente definitiva siempre debe ser el manual oficial de Yamaha.
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 11: EXPERIMENTO FINAL ==================== -->
+  <section id="view-experimento" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🎯</span> El Gran Experimento Final</h2>
+      <p>
+        Pon a prueba el método con un tema sobre el cual no tengas <strong>ningún conocimiento previo</strong> (por ejemplo: <em>quásares</em>, <em>reacciones redox complejas</em> o <em>topología algebraica</em>).
+      </p>
+
+      <ol class="steps-timeline">
+        <li>
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <div class="step-title">Inmersión Pura</div>
+            <p>Entra a Gemini y explora durante 12 minutos guiado únicamente por los nodos e imágenes.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <div class="step-title">Síntesis en Papel</div>
+            <p>Escribe 3 conclusiones clave sin consultar ninguna fuente externa.</p>
+          </div>
+        </li>
+        <li>
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <div class="step-title">Auditoría con el Evaluador</div>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-title">Prompt Auditoría</span>
+                <button class="btn-action" onclick="copyPrompt('p-audit', this)">Copiar</button>
+              </div>
+              <pre id="p-audit">Voy a explicarte lo que creo que he entendido sobre [TEMA].
+No me des información nueva todavía.
+Primero analiza mi explicación.
+
+Dime:
+- qué está correcto;
+- qué está incompleto;
+- qué está equivocado.
+
+Después hazme 5 preguntas sobre lo que acabo de aprender sin darme las respuestas.</pre>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 12: FUENTES ==================== -->
+  <section id="view-fuentes" class="view-section">
+    <div class="card-panel">
+      <h2><span class="icon">🔗</span> Fuentes Oficiales y Referencias</h2>
+      <p>Documentación y anuncios de soporte que originaron este manual:</p>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-top:16px;">
+        <a href="https://blog.google/innovation-and-ai/products/gemini-app/student-offer-google-ai/" target="_blank" rel="noopener" class="callout info" style="display:block; text-decoration:none;">
+          <strong>Google:</strong> Student offer & Interactive visualizations announcement (Agosto 2026) ↗
+        </a>
+        <a href="https://blog.google/products-and-platforms/products/education/gemini-interactive-images/" target="_blank" rel="noopener" class="callout info" style="display:block; text-decoration:none;">
+          <strong>Google Education:</strong> Gemini Interactive Images release notes ↗
+        </a>
+        <a href="https://www.testingcatalog.com/gemini-immersive-view-appears-in-the-students-section/" target="_blank" rel="noopener" class="callout info" style="display:block; text-decoration:none;">
+          <strong>TestingCatalog:</strong> Gemini Immersive View discovered in Students hub (Septiembre 2026) ↗
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== VIEW 13: CRÉDITOS ==================== -->
+  <section id="view-creditos" class="view-section">
+    <div class="card-panel" style="text-align:center;">
+      <h2><span class="icon">★</span> Créditos & Metadatos</h2>
+      
+      <div style="max-width:500px; margin:24px auto; background:rgba(0,212,255,0.03); border:1px solid var(--border); border-radius:18px; padding:24px; text-align:left;">
+        <p style="margin-bottom:8px;"><strong>Proyecto:</strong> Gemini Immersive View Interactive Academy</p>
+        <p style="margin-bottom:8px;"><strong>Autor / Guía Original:</strong> Rubén Sbarsky</p>
+        <p style="margin-bottom:8px;"><strong>Fecha:</strong> 24/09/2026 · 16:36:16</p>
+        <p style="margin-bottom:8px;"><strong>Lema:</strong> <em>Fiat iustitia, ruat caelum.</em></p>
+        <p style="margin-bottom:0;"><strong>Propósito:</strong> Divulgación científica, educación y pedagogía interactiva con Inteligencia Artificial.</p>
+      </div>
+
+      <div class="callout example" style="display:inline-block; font-style:italic;">
+        "No consumir información: explorarla."
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modern Floating Dock Controller -->
+<div class="floating-dock">
+  <button class="dock-btn" onclick="prevView()" title="Sección Anterior">◀</button>
+  <button class="dock-btn" onclick="switchView('home')" title="Ir al Inicio">🏠</button>
+  <button class="dock-btn" onclick="switchView('fisica')" title="Ir a Simulador">🔬</button>
+  <button class="dock-btn" onclick="switchView('musica')" title="Ir a Piano">🎹</button>
+  <div class="dock-divider"></div>
+  <button class="dock-btn" onclick="nextView()" title="Siguiente Sección">▶</button>
+  <button class="dock-btn" onclick="window.scrollTo({top:0, behavior:'smooth'})" title="Volver Arriba">▲</button>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  // --- Views Registry ---
+  const views = [
+    'home', 'quees', 'primeros', 'ejercicios', 'fisica', 
+    'musica', 'mate', 'metodo', 'prompts', 'buenas', 
+    'experimento', 'fuentes', 'creditos'
+  ];
+  let currentViewIndex = 0;
+
+  // --- Switch View Functionality ---
+  window.switchView = function(viewId) {
+    const targetIdx = views.indexOf(viewId);
+    if (targetIdx === -1) return;
+    currentViewIndex = targetIdx;
+
+    // Toggle Section visibility
+    views.forEach(id => {
+      const el = document.getElementById('view-' + id);
+      if (el) {
+        if (id === viewId) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      }
+    });
+
+    // Update Nav Header Buttons
+    document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+      if (btn.dataset.view === viewId) {
+        btn.classList.add('active');
+        btn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateProgressBar();
+  };
+
+  window.prevView = function() {
+    const prevIdx = (currentViewIndex - 1 + views.length) % views.length;
+    window.switchView(views[prevIdx]);
+  };
+
+  window.nextView = function() {
+    const nextIdx = (currentViewIndex + 1) % views.length;
+    window.switchView(views[nextIdx]);
+  };
+
+  // Nav clicks
+  document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.switchView(btn.dataset.view);
+    });
+  });
+
+  // --- Copy to Clipboard & Toast System ---
+  function showToast(msg) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = '<span>✓</span> ' + msg;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 20);
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 350);
+    }, 2400);
+  }
+
+  window.copyToClipboard = function(text, btnElement) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        handleCopySuccess(btnElement);
+      }).catch(() => fallbackCopy(text, btnElement));
+    } else {
+      fallbackCopy(text, btnElement);
+    }
+  };
+
+  window.copyPrompt = function(elementId, btnElement) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    window.copyToClipboard(el.textContent, btnElement);
+  };
+
+  function handleCopySuccess(btnElement) {
+    showToast('Copiado al portapapeles con éxito');
+    if (btnElement) {
+      const orig = btnElement.innerHTML;
+      btnElement.innerHTML = '✓ ¡Copiado!';
+      btnElement.classList.add('copied');
+      setTimeout(() => {
+        btnElement.innerHTML = orig;
+        btnElement.classList.remove('copied');
+      }, 1800);
+    }
+  }
+
+  function fallbackCopy(text, btnElement) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      handleCopySuccess(btnElement);
+    } catch(e) {}
+    document.body.removeChild(ta);
+  }
+
+  // --- Progress Bar ---
+  function updateProgressBar() {
+    const totalViews = views.length;
+    const progress = ((currentViewIndex + 1) / totalViews) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+  }
+
+  // --- Accordion Logic ---
+  document.querySelectorAll('.faq-accordion').forEach(acc => {
+    const trigger = acc.querySelector('.faq-trigger');
+    if (trigger) {
+      trigger.addEventListener('click', () => {
+        acc.classList.toggle('open');
+      });
+    }
+  });
+
+  // --- Ambient Background Canvas Particle Grid ---
+  (function initAmbientCanvas() {
+    const canvas = document.getElementById('ambient-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const particles = [];
+    const particleCount = 45;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        r: Math.random() * 2 + 1,
+        alpha: Math.random() * 0.5 + 0.2
+      });
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw faint connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 130) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(0, 212, 255, ${0.15 * (1 - dist / 130)})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw particles
+      particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 212, 255, ${p.alpha})`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  // --- Real-Time Physics Lab: Pendulum Simulator ---
+  (function initPendulumLab() {
+    const canvas = document.getElementById('pendulum-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const lenInput = document.getElementById('pend-len');
+    const gInput = document.getElementById('pend-g');
+    const dampInput = document.getElementById('pend-damp');
+    const resetBtn = document.getElementById('btn-reset-pend');
+
+    let originX, originY;
+    let angle = Math.PI / 3;
+    let angleVel = 0;
+    let angleAcc = 0;
+    let length = parseFloat(lenInput.value);
+    let dragging = false;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      originX = canvas.width / 2;
+      originY = 30;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function update() {
+      length = parseFloat(lenInput.value);
+      const g = parseFloat(gInput.value) * 0.04;
+      const damp = parseFloat(dampInput.value);
+
+      if (!dragging) {
+        angleAcc = (-1 * g / length) * Math.sin(angle);
+        angleVel += angleAcc;
+        angleVel *= damp;
+        angle += angleVel;
+      }
+
+      const bobX = originX + length * Math.sin(angle);
+      const bobY = originY + length * Math.cos(angle);
+
+      // Render
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Center mount
+      ctx.beginPath();
+      ctx.arc(originX, originY, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#00d4ff';
+      ctx.fill();
+
+      // String line
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      ctx.lineTo(bobX, bobY);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Bob Outer Glow & Body
+      ctx.beginPath();
+      ctx.arc(bobX, bobY, 18, 0, Math.PI * 2);
+      ctx.fillStyle = dragging ? '#38bdf8' : '#0284c7';
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = dragging ? 20 : 12;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Energy Bar indicator
+      const maxH = length;
+      const curH = length * (1 - Math.cos(angle));
+      const potRatio = Math.min(1, Math.max(0, curH / (length * 0.6)));
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = '11px sans-serif';
+      ctx.fillText(`Ángulo: ${(angle * 180 / Math.PI).toFixed(1)}°`, 16, 24);
+      ctx.fillText(`Energía Cinética: ${(Math.abs(angleVel) * 80).toFixed(1)} J`, 16, 42);
+      ctx.fillText(`Energía Potencial: ${(potRatio * 100).toFixed(1)} J`, 16, 60);
+
+      requestAnimationFrame(update);
+    }
+
+    // Drag interactions
+    function handlePointerDown(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const bobX = originX + length * Math.sin(angle);
+      const bobY = originY + length * Math.cos(angle);
+      const dist = Math.hypot(x - bobX, y - bobY);
+      if (dist < 35) {
+        dragging = true;
+      }
+    }
+
+    function handlePointerMove(e) {
+      if (!dragging) return;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      angle = Math.atan2(x - originX, y - originY);
+      angleVel = 0;
+    }
+
+    function handlePointerUp() {
+      dragging = false;
+    }
+
+    canvas.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+
+    canvas.addEventListener('touchstart', handlePointerDown, { passive: true });
+    window.addEventListener('touchmove', handlePointerMove, { passive: true });
+    window.addEventListener('touchend', handlePointerUp);
+
+    resetBtn.addEventListener('click', () => {
+      angle = Math.PI / 3;
+      angleVel = 0;
+    });
+
+    update();
+  })();
+
+  // --- Real-Time Math Lab: Wave Grapher ---
+  (function initMathWaveLab() {
+    const canvas = document.getElementById('math-wave-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const ampInput = document.getElementById('wave-amp');
+    const freqInput = document.getElementById('wave-freq');
+    const phaseInput = document.getElementById('wave-phase');
+    let time = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function render() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const midY = h / 2;
+      const A = parseFloat(ampInput.value);
+      const freq = parseFloat(freqInput.value) * 0.015;
+      const phase = parseFloat(phaseInput.value);
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Grid axis
+      ctx.beginPath();
+      ctx.moveTo(0, midY);
+      ctx.lineTo(w, midY);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Sine Wave Line
+      ctx.beginPath();
+      for (let x = 0; x < w; x++) {
+        const y = midY - A * Math.sin(x * freq + phase + time);
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#00d4ff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#00d4ff';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      time += 0.03;
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  // --- Web Audio Synthesizer & Piano ---
+  (function initVirtualPiano() {
+    const container = document.getElementById('pianoContainer');
+    const noteDisplay = document.getElementById('piano-note-display');
+    if (!container) return;
+
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq) {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 1.2);
+      } catch(e) {}
+    }
+
+    const keysData = [
+      { note: 'C4', freq: 261.63, type: 'white', label: 'C(I)' },
+      { note: 'C#4', freq: 277.18, type: 'black', label: 'C#' },
+      { note: 'D4', freq: 293.66, type: 'white', label: 'D(II)' },
+      { note: 'D#4', freq: 311.13, type: 'black', label: 'D#' },
+      { note: 'E4', freq: 329.63, type: 'white', label: 'E(III)' },
+      { note: 'F4', freq: 349.23, type: 'white', label: 'F(IV)' },
+      { note: 'F#4', freq: 369.99, type: 'black', label: 'F#' },
+      { note: 'G4', freq: 392.00, type: 'white', label: 'G(V)' },
+      { note: 'G#4', freq: 415.30, type: 'black', label: 'G#' },
+      { note: 'A4', freq: 440.00, type: 'white', label: 'A(VI)' },
+      { note: 'A#4', freq: 466.16, type: 'black', label: 'A#' },
+      { note: 'B4', freq: 493.88, type: 'white', label: 'B(VII)' },
+      { note: 'C5', freq: 523.25, type: 'white', label: 'C(8va)' }
+    ];
+
+    container.innerHTML = '';
+    keysData.forEach(k => {
+      const keyEl = document.createElement('div');
+      keyEl.className = `piano-key ${k.type}`;
+      keyEl.dataset.note = k.note;
+      keyEl.dataset.freq = k.freq;
+      keyEl.dataset.label = k.label;
+      keyEl.innerHTML = `<span>${k.label}</span>`;
+
+      keyEl.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        playTone(k.freq);
+        noteDisplay.textContent = `Nota: ${k.label} (${k.freq.toFixed(1)} Hz)`;
+        keyEl.classList.add('active');
+      });
+
+      const removeActive = () => keyEl.classList.remove('active');
+      keyEl.addEventListener('pointerup', removeActive);
+      keyEl.addEventListener('pointerleave', removeActive);
+
+      container.appendChild(keyEl);
+    });
+
+    window.clearPianoHighlights = function() {
+      document.querySelectorAll('.piano-key').forEach(el => el.classList.remove('highlight'));
+      document.querySelectorAll('.btn-chord').forEach(b => b.classList.remove('active'));
+      noteDisplay.textContent = 'Selecciona una nota o acorde';
+    };
+
+    window.highlightChord = function(chordType) {
+      window.clearPianoHighlights();
+      let notesToHighlight = [];
+      let desc = '';
+
+      if (chordType === 'C-maj') {
+        notesToHighlight = ['C4', 'E4', 'G4'];
+        desc = 'Acorde C Mayor: Tónica C(I) + 3ra Mayor E(III) + 5ta Justa G(V)';
+      } else if (chordType === 'C-min') {
+        notesToHighlight = ['C4', 'D#4', 'G4'];
+        desc = 'Acorde C Menor: Tónica C(I) + 3ra Menor Eb/D#(bIII) + 5ta Justa G(V)';
+      } else if (chordType === 'F-maj') {
+        notesToHighlight = ['F4', 'A4', 'C5'];
+        desc = 'Acorde F Mayor: Subdominante F(IV) + 3ra Mayor A(VI) + 5ta C';
+      } else if (chordType === 'G-maj') {
+        notesToHighlight = ['G4', 'B4', 'D4'];
+        desc = 'Acorde G Mayor: Dominante G(V) + 3ra Mayor B(VII) + 5ta D';
+      }
+
+      notesToHighlight.forEach(n => {
+        const el = container.querySelector(`[data-note="${n}"]`);
+        if (el) {
+          el.classList.add('highlight');
+          const freq = parseFloat(el.dataset.freq);
+          setTimeout(() => playTone(freq), 50);
+        }
+      });
+
+      noteDisplay.textContent = desc;
+    };
+  })();
+
+  updateProgressBar();
+})();
+</script>
+
+</body>
+</html>
